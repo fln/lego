@@ -30,7 +30,6 @@ import (
 	"github.com/xenolf/lego/providers/dns/pdns"
 	"github.com/xenolf/lego/providers/dns/rfc2136"
 	"github.com/xenolf/lego/providers/dns/route53"
-	"github.com/xenolf/lego/providers/dns/vultr"
 	"github.com/xenolf/lego/providers/http/memcached"
 	"github.com/xenolf/lego/providers/http/webroot"
 )
@@ -158,8 +157,6 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 			provider, err = route53.NewDNSProvider()
 		case "rfc2136":
 			provider, err = rfc2136.NewDNSProvider()
-		case "vultr":
-			provider, err = vultr.NewDNSProvider()
 		case "ovh":
 			provider, err = ovh.NewDNSProvider()
 		case "pdns":
