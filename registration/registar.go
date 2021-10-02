@@ -67,6 +67,29 @@ func (r *Registrar) Register(options RegisterOptions) (*Resource, error) {
 	return &Resource{URI: account.Location, Body: account.Account}, nil
 }
 
+// RegisterWithZeroSSL Register the current account to the ZeroSSL server.
+func (r *Registrar) RegisterWithZeroSSL(options RegisterOptions) (*Resource, error) {
+	if r.user.GetEmail() == "" {
+		return nil, errors.New("acme: cannot register ZeroSSL account without email address")
+	}
+
+	accMsg := acme.Account{
+		TermsOfServiceAgreed: options.TermsOfServiceAgreed,
+		Contact:              []string{"mailto:" + r.user.GetEmail()},
+	}
+
+	account, err := r.core.Accounts.NewZeroSSL(accMsg, r.user.GetEmail())
+	if err != nil {
+		// seems impossible
+		var errorDetails acme.ProblemDetails
+		if !errors.As(err, &errorDetails) || errorDetails.HTTPStatus != http.StatusConflict {
+			return nil, err
+		}
+	}
+
+	return &Resource{URI: account.Location, Body: account.Account}, nil
+}
+
 // RegisterWithExternalAccountBinding Register the current account to the ACME server.
 func (r *Registrar) RegisterWithExternalAccountBinding(options RegisterEABOptions) (*Resource, error) {
 	accMsg := acme.Account{

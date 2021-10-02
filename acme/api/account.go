@@ -1,9 +1,11 @@
 package api
 
 import (
+	"bytes"
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"net/url"
 
 	"github.com/go-acme/lego/v4/acme"
 )
@@ -25,6 +27,25 @@ func (a *AccountService) New(req acme.Account) (acme.ExtendedAccount, error) {
 	}
 
 	return acme.ExtendedAccount{Account: account, Location: location}, nil
+}
+
+// NewZeroSSL Creates a new account.
+func (a *AccountService) NewZeroSSL(accMsg acme.Account, email string) (acme.ExtendedAccount, error) {
+	newAccountURL := "http://api.zerossl.com/acme/eab-credentials-email"
+	payload := url.Values{"email": []string{email}}
+	data := struct {
+		Success bool   `json:"success"`
+		KID     string `json:"eab_kid"`
+		HMAC    string `json:"eab_hmac_key"`
+	}{}
+	_, err := a.core.doer.Post(newAccountURL, bytes.NewBufferString(payload.Encode()), "application/x-www-form-urlencoded", &data)
+	if err != nil {
+		return acme.ExtendedAccount{}, fmt.Errorf("acme: error sending ZeroSSL account EAB details request: %w", err)
+	}
+	if !data.Success {
+		return acme.ExtendedAccount{}, fmt.Errorf("acme: error reading ZeroSSL account EAB details response, success=false")
+	}
+	return a.NewEAB(accMsg, data.KID, data.HMAC)
 }
 
 // NewEAB Creates a new account with an External Account Binding.
