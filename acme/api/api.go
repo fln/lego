@@ -80,7 +80,7 @@ func (a *Core) retrievablePost(uri string, content []byte, response interface{})
 	bo := backoff.NewExponentialBackOff()
 	bo.InitialInterval = 200 * time.Millisecond
 	bo.MaxInterval = 5 * time.Second
-	bo.MaxElapsedTime = 20 * time.Second
+	bo.MaxElapsedTime = 120 * time.Second
 
 	var resp *http.Response
 	operation := func() error {
