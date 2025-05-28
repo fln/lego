@@ -105,7 +105,7 @@ func (a *Core) retrievablePost(uri string, content []byte, response any) (*http.
 
 	return backoff.Retry(ctx, operation,
 		backoff.WithBackOff(bo),
-		backoff.WithMaxElapsedTime(20*time.Second),
+		backoff.WithMaxElapsedTime(120*time.Second),
 		backoff.WithNotify(notify))
 }
 
