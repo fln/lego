@@ -30,7 +30,19 @@ func setupClient(ctx *cli.Context, account *Account, keyType certcrypto.KeyType)
 
 func setupAccount(ctx *cli.Context, accountsStorage *AccountsStorage) (*Account, certcrypto.KeyType) {
 	keyType := getKeyType(ctx)
-	privateKey := accountsStorage.GetPrivateKey(keyType)
+
+	accountKey := keyType
+	if accountKey == certcrypto.EC384 {
+		// Some ACME provideds does not support EC384 account keys,
+		// reusing same key type as certificate key can cause creating
+		// malformed account key that will never work until manually
+		// removed.
+		//
+		// Usng EC256 for account key does not reduce ACME protocol
+		// security.
+		accountKey = certcrypto.EC256
+	}
+	privateKey := accountsStorage.GetPrivateKey(accountKey)
 
 	var account *Account
 	if accountsStorage.ExistsAccountFilePath() {
